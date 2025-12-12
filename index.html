@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Exam Slip Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Icon Components
+        const SearchIcon = ({ className = "h-5 w-5" }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        );
+
+        const CalendarIcon = ({ className = "h-4 w-4" }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+        );
+
+        const ClockIcon = ({ className = "h-4 w-4" }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const MapPinIcon = ({ className = "h-4 w-4" }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        );
+
+        const UserCircleIcon = ({ className = "h-4 w-4" }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const AlertCircleIcon = ({ className = "h-12 w-12" }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        // Dummy Student Data
+        const studentsData = [
+            {
+                photo: "https://ui-avatars.com/api/?name=Ahmed+Khan&size=200&background=1e40af&color=fff&bold=true",
+                name: "Ahmed Khan",
+                rollNumber: "25K-5570",
+                exams: [
+                    {
+                        code: "CS1009",
+                        courseName: "Data Structures and Algorithms",
+                        day: "Monday",
+                        date: "2024-03-15",
+                        time: "09:00 AM - 12:00 PM",
+                        teacher: "Dr. Sarah Ali",
+                        seatLocation: "Hall A, Seat 45"
+                    },
+                    {
+                        code: "CS2012",
+                        courseName: "Database Systems",
+                        day: "Wednesday",
+                        date: "2024-03-17",
+                        time: "02:00 PM - 05:00 PM",
+                        teacher: "Prof. Muhammad Hassan",
+                        seatLocation: "Hall B, Seat 23"
+                    },
+                    {
+                        code: "MATH2001",
+                        courseName: "Linear Algebra",
+                        day: "Friday",
+                        date: "2024-03-19",
+                        time: "10:00 AM - 01:00 PM",
+                        teacher: "Dr. Fatima Ahmed",
+                        seatLocation: "Hall C, Seat 67"
+                    },
+                    {
+                        code: "CS3005",
+                        courseName: "Software Engineering",
+                        day: "Monday",
+                        date: "2024-03-22",
+                        time: "09:00 AM - 12:00 PM",
+                        teacher: "Prof. Ali Raza",
+                        seatLocation: "Hall A, Seat 12"
+                    }
+                ]
+            },
+            {
+                photo: "https://ui-avatars.com/api/?name=Fatima+Ahmed&size=200&background=3b82f6&color=fff&bold=true",
+                name: "Fatima Ahmed",
+                rollNumber: "19K-0221",
+                exams: [
+                    {
+                        code: "CS1009",
+                        courseName: "Data Structures and Algorithms",
+                        day: "Monday",
+                        date: "2024-03-15",
+                        time: "09:00 AM - 12:00 PM",
+                        teacher: "Dr. Sarah Ali",
+                        seatLocation: "Hall A, Seat 78"
+                    },
+                    {
+                        code: "CS2012",
+                        courseName: "Database Systems",
+                        day: "Wednesday",
+                        date: "2024-03-17",
+                        time: "02:00 PM - 05:00 PM",
+                        teacher: "Prof. Muhammad Hassan",
+                        seatLocation: "Hall B, Seat 34"
+                    },
+                    {
+                        code: "CS3005",
+                        courseName: "Software Engineering",
+                        day: "Monday",
+                        date: "2024-03-22",
+                        time: "09:00 AM - 12:00 PM",
+                        teacher: "Prof. Ali Raza",
+                        seatLocation: "Hall A, Seat 56"
+                    }
+                ]
+            },
+            {
+                photo: "https://ui-avatars.com/api/?name=Hassan+Malik&size=200&background=475569&color=fff&bold=true",
+                name: "Hassan Malik",
+                rollNumber: "22K-3345",
+                exams: [
+                    {
+                        code: "CS2012",
+                        courseName: "Database Systems",
+                        day: "Wednesday",
+                        date: "2024-03-17",
+                        time: "02:00 PM - 05:00 PM",
+                        teacher: "Prof. Muhammad Hassan",
+                        seatLocation: "Hall B, Seat 89"
+                    },
+                    {
+                        code: "MATH2001",
+                        courseName: "Linear Algebra",
+                        day: "Friday",
+                        date: "2024-03-19",
+                        time: "10:00 AM - 01:00 PM",
+                        teacher: "Dr. Fatima Ahmed",
+                        seatLocation: "Hall C, Seat 23"
+                    },
+                    {
+                        code: "CS3005",
+                        courseName: "Software Engineering",
+                        day: "Monday",
+                        date: "2024-03-22",
+                        time: "09:00 AM - 12:00 PM",
+                        teacher: "Prof. Ali Raza",
+                        seatLocation: "Hall A, Seat 90"
+                    },
+                    {
+                        code: "CS4008",
+                        courseName: "Machine Learning",
+                        day: "Thursday",
+                        date: "2024-03-25",
+                        time: "02:00 PM - 05:00 PM",
+                        teacher: "Dr. Zainab Khan",
+                        seatLocation: "Hall D, Seat 45"
+                    }
+                ]
+            },
+            {
+                photo: "https://ui-avatars.com/api/?name=Zainab+Ali&size=200&background=64748b&color=fff&bold=true",
+                name: "Zainab Ali",
+                rollNumber: "24K-7890",
+                exams: [
+                    {
+                        code: "CS1009",
+                        courseName: "Data Structures and Algorithms",
+                        day: "Monday",
+                        date: "2024-03-15",
+                        time: "09:00 AM - 12:00 PM",
+                        teacher: "Dr. Sarah Ali",
+                        seatLocation: "Hall A, Seat 34"
+                    },
+                    {
+                        code: "MATH2001",
+                        courseName: "Linear Algebra",
+                        day: "Friday",
+                        date: "2024-03-19",
+                        time: "10:00 AM - 01:00 PM",
+                        teacher: "Dr. Fatima Ahmed",
+                        seatLocation: "Hall C, Seat 89"
+                    },
+                    {
+                        code: "CS4008",
+                        courseName: "Machine Learning",
+                        day: "Thursday",
+                        date: "2024-03-25",
+                        time: "02:00 PM - 05:00 PM",
+                        teacher: "Dr. Zainab Khan",
+                        seatLocation: "Hall D, Seat 12"
+                    }
+                ]
+            },
+            {
+                photo: "https://ui-avatars.com/api/?name=Omar+Sheikh&size=200&background=1e40af&color=fff&bold=true",
+                name: "Omar Sheikh",
+                rollNumber: "21K-4567",
+                exams: [
+                    {
+                        code: "CS2012",
+                        courseName: "Database Systems",
+                        day: "Wednesday",
+                        date: "2024-03-17",
+                        time: "02:00 PM - 05:00 PM",
+                        teacher: "Prof. Muhammad Hassan",
+                        seatLocation: "Hall B, Seat 67"
+                    },
+                    {
+                        code: "CS3005",
+                        courseName: "Software Engineering",
+                        day: "Monday",
+                        date: "2024-03-22",
+                        time: "09:00 AM - 12:00 PM",
+                        teacher: "Prof. Ali Raza",
+                        seatLocation: "Hall A, Seat 78"
+                    }
+                ]
+            },
+            {
+                photo: "https://ui-avatars.com/api/?name=Ayesha+Butt&size=200&background=3b82f6&color=fff&bold=true",
+                name: "Ayesha Butt",
+                rollNumber: "23K-1122",
+                exams: [
+                    {
+                        code: "CS1009",
+                        courseName: "Data Structures and Algorithms",
+                        day: "Monday",
+                        date: "2024-03-15",
+                        time: "09:00 AM - 12:00 PM",
+                        teacher: "Dr. Sarah Ali",
+                        seatLocation: "Hall A, Seat 91"
+                    },
+                    {
+                        code: "MATH2001",
+                        courseName: "Linear Algebra",
+                        day: "Friday",
+                        date: "2024-03-19",
+                        time: "10:00 AM - 01:00 PM",
+                        teacher: "Dr. Fatima Ahmed",
+                        seatLocation: "Hall C, Seat 45"
+                    },
+                    {
+                        code: "CS4008",
+                        courseName: "Machine Learning",
+                        day: "Thursday",
+                        date: "2024-03-25",
+                        time: "02:00 PM - 05:00 PM",
+                        teacher: "Dr. Zainab Khan",
+                        seatLocation: "Hall D, Seat 78"
+                    }
+                ]
+            }
+        ];
+
+        // Search Bar Component
+        const SearchBar = ({ value, onChange, onFocus, onBlur }) => {
+            return (
+                <div className="w-full max-w-2xl mx-auto">
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                            <SearchIcon className="h-5 w-5 text-slate-400 transition-colors duration-300" />
+                        </div>
+                        <input
+                            type="text"
+                            value={value}
+                            onChange={onChange}
+                            onFocus={onFocus}
+                            onBlur={onBlur}
+                            placeholder="Enter Roll No..."
+                            className="w-full pl-12 pr-4 py-4 text-lg border-2 border-slate-300 rounded-xl 
+                                       bg-white text-slate-800 placeholder-slate-400
+                                       focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200
+                                       transition-all duration-300 shadow-sm hover:shadow-md
+                                       focus:shadow-lg focus:shadow-blue-100"
+                        />
+                    </div>
+                </div>
+            );
+        };
+
+        // Exam Slip Card Component
+        const ExamSlipCard = ({ student }) => {
+            const formatDate = (dateString) => {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+            };
+
+            return (
+                <div className="slide-in max-w-5xl mx-auto">
+                    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
+                        {/* Header Section */}
+                        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+                            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                                <div className="flex-shrink-0">
+                                    <img 
+                                        src={student.photo} 
+                                        alt={student.name}
+                                        className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
+                                    />
+                                </div>
+                                <div className="flex-1 text-center md:text-left">
+                                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                                        {student.name}
+                                    </h2>
+                                    <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
+                                        <span className="text-blue-100 text-sm font-medium">Roll Number:</span>
+                                        <span className="text-white text-xl font-bold tracking-wide">
+                                            {student.rollNumber}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Exam Schedule Section */}
+                        <div className="px-8 py-6">
+                            <div className="mb-6">
+                                <h3 className="text-xl font-semibold text-slate-800 mb-1">Examination Schedule</h3>
+                                <p className="text-sm text-slate-500">Please arrive 15 minutes before the scheduled time</p>
+                            </div>
+
+                            {/* Table */}
+                            <div className="overflow-x-auto">
+                                <table className="w-full border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-100 border-b-2 border-slate-300">
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                                                Code
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                                                Course Name
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                                                Day & Date
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                                                Time
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                                                Teacher
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                                                Seat Location
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {student.exams.map((exam, index) => (
+                                            <tr 
+                                                key={index}
+                                                className={`border-b border-slate-200 transition-colors duration-150 hover:bg-blue-50 ${
+                                                    index % 2 === 0 ? 'bg-white' : 'bg-slate-50'
+                                                }`}
+                                            >
+                                                <td className="px-4 py-4">
+                                                    <span className="font-mono font-semibold text-blue-600 text-sm">
+                                                        {exam.code}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <span className="text-slate-800 font-medium">
+                                                        {exam.courseName}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <CalendarIcon className="h-4 w-4 text-slate-400" />
+                                                        <div>
+                                                            <div className="text-slate-700 font-medium text-sm">
+                                                                {exam.day}
+                                                            </div>
+                                                            <div className="text-slate-500 text-xs">
+                                                                {formatDate(exam.date)}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <ClockIcon className="h-4 w-4 text-slate-400" />
+                                                        <span className="text-slate-700 font-medium text-sm">
+                                                            {exam.time}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <UserCircleIcon className="h-4 w-4 text-slate-400" />
+                                                        <span className="text-slate-700 text-sm">
+                                                            {exam.teacher}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <MapPinIcon className="h-4 w-4 text-blue-500" />
+                                                        <span className="text-slate-700 font-medium text-sm">
+                                                            {exam.seatLocation}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="bg-slate-50 px-8 py-4 border-t border-slate-200">
+                            <p className="text-xs text-slate-500 text-center">
+                                This is an official examination slip. Please bring a valid ID card to the examination hall.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Empty State Component
+        const EmptyState = () => {
+            return (
+                <div className="fade-in max-w-md mx-auto text-center py-12">
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200">
+                        <div className="flex justify-center mb-4">
+                            <div className="bg-slate-100 rounded-full p-4">
+                                <AlertCircleIcon className="h-12 w-12 text-slate-400" />
+                            </div>
+                        </div>
+                        <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                            No Student Found
+                        </h3>
+                        <p className="text-slate-500 text-sm">
+                            Please check the roll number and try again.
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [searchQuery, setSearchQuery] = useState('');
+            const [filteredStudent, setFilteredStudent] = useState(null);
+            const [isFocused, setIsFocused] = useState(false);
+
+            useEffect(() => {
+                if (searchQuery.trim() === '') {
+                    setFilteredStudent(null);
+                    return;
+                }
+
+                const query = searchQuery.trim().toUpperCase();
+                const found = studentsData.find(
+                    student => student.rollNumber.toUpperCase() === query ||
+                              student.rollNumber.toUpperCase().includes(query)
+                );
+
+                setFilteredStudent(found || null);
+            }, [searchQuery]);
+
+            const handleSearchChange = (e) => {
+                setSearchQuery(e.target.value);
+            };
+
+            return (
+                <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-7xl mx-auto">
+                        {/* Header */}
+                        <div className="text-center mb-12 fade-in">
+                            <h1 className="text-4xl md:text-5xl font-bold text-slate-800 mb-3">
+                                Student Exam Slip Search
+                            </h1>
+                            <p className="text-lg text-slate-600">
+                                Search by Roll Number to view examination schedule
+                            </p>
+                        </div>
+
+                        {/* Search Bar */}
+                        <div className="mb-8 fade-in">
+                            <SearchBar
+                                value={searchQuery}
+                                onChange={handleSearchChange}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() => setIsFocused(false)}
+                            />
+                        </div>
+
+                        {/* Results */}
+                        <div className="mt-8">
+                            {filteredStudent ? (
+                                <ExamSlipCard student={filteredStudent} />
+                            ) : searchQuery.trim() !== '' ? (
+                                <EmptyState />
+                            ) : (
+                                <div className="text-center py-12">
+                                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200 max-w-md mx-auto">
+                                        <div className="flex justify-center mb-4">
+                                            <div className="bg-blue-100 rounded-full p-4">
+                                                <SearchIcon className="h-12 w-12 text-blue-600" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                                            Start Searching
+                                        </h3>
+                                        <p className="text-slate-500 text-sm">
+                                            Enter a roll number above to view the student's exam slip
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render App
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
+
